@@ -30,16 +30,17 @@ import (
 // Ctx represents the Context which hold the HTTP request and response.
 // It has methods for the request query string, parameters, body, HTTP headers and so on.
 type Ctx struct {
-	app          *App                 // Reference to *App
-	route        *Route               // Reference to *Route
-	indexRoute   int                  // Index of the current route
-	indexHandler int                  // Index of the current handler
-	method       string               // HTTP method
-	methodINT    int                  // HTTP method INT equivalent
-	path         string               // Prettified HTTP path
-	treePath     string               // Path for the search in the tree
-	pathOriginal string               // Original HTTP path
-	values       []string             // Route parameter values
+	app          *App     // Reference to *App
+	route        *Route   // Reference to *Route
+	indexRoute   int      // Index of the current route
+	indexHandler int      // Index of the current handler
+	method       string   // HTTP method
+	methodINT    int      // HTTP method INT equivalent
+	path         string   // Prettified HTTP path
+	treePath     string   // Path for the search in the tree
+	pathOriginal string   // Original HTTP path
+	values       []string // Route parameter values
+	err          error
 	fasthttp     *fasthttp.RequestCtx // Reference to *fasthttp.RequestCtx
 	matched      bool                 // Non use route matched
 }
@@ -599,7 +600,10 @@ func (c *Ctx) MultipartForm() (*multipart.Form, error) {
 }
 
 // Next executes the next method in the stack that matches the current route.
-func (c *Ctx) Next() error {
+func (c *Ctx) Next(err ...error) error {
+	if len(err) > 0 {
+		return err[0]
+	}
 	// Increment handler index
 	c.indexHandler++
 	// Did we executed all route handlers?
